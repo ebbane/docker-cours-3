@@ -1,0 +1,10 @@
+version: "2"
+services:
+  plik:
+    image: rootgg/plik:latest
+    container_name: plik
+    volumes:
+      - ./plikd.conf:/home/plik/server/plikd.cfg
+    ports:
+      - 8080:8080
+    restart: "unless-stopped"

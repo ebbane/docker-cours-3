@@ -1,0 +1,18 @@
+version: "3.6"
+
+services:
+  web:
+    image: zedeus/nitter:latest
+    container_name: nitter
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./nitter.conf:/src/nitter.conf:ro
+    depends_on:
+      - nitter-redis
+
+  nitter-redis:
+    image: redis:6-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"

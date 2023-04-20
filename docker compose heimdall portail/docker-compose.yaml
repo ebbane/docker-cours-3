@@ -1,0 +1,97 @@
+---
+version: "3.6"
+services:
+  heimdall:
+    image: lscr.io/linuxserver/heimdall:latest
+    container_name: heimdall
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+    volumes:
+      - /path/to/appdata/config:/config
+    ports:
+      - "80:80"
+      - "443:443"
+
+  wordpress:
+    container_name: wordpress
+    image: wordpress:latest
+    ports:
+      - "8086:80"
+
+  plik:
+    image: rootgg/plik:latest
+    container_name: plik
+    volumes:
+      - ./plikd.conf:/home/plik/server/plikd.cfg
+    ports:
+      - "8080:8080"
+
+  nitter:
+    image: zedeus/nitter:latest
+    container_name: nitter
+    ports:
+      - "8082:8080"
+    volumes:
+      - ./nitter.conf:/src/nitter.conf:ro
+    depends_on:
+      - nitter-redis
+
+  nitter-redis:
+    image: redis:6-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+
+  gitea:
+    image: gitea/gitea:latest
+    container_name: gitea
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+      - GITEA__database__DB_TYPE=postgres
+      - GITEA__database__HOST=postgres:5432
+      - GITEA__database__USER=postgres
+      - GITEA__database__PASSWD=password
+    ports:
+      - "8083:3000"
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:latest
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: gitea
+
+  mariadb:
+    image: mariadb:latest
+    restart: always
+    environment:
+      - MARIADB_ROOT_PASSWORD=password
+    ports:
+      - "3306:3306"
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: phpmyadmin
+    environment:
+      PMA_HOSTS: mariadb
+      PMA_ARBITRARY: 1
+    ports:
+      - "8085:80"
+    depends_on:
+      - mariadb
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: phppgadmin
+    ports:
+      - "8084:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: email@email.com
+      PGADMIN_DEFAULT_PASSWORD: admin
